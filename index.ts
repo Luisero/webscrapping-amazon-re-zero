@@ -22,7 +22,7 @@ import puppeteer from "puppeteer";
     });
 
 
-    const productHandles = await page.$$('.s-main-slot.s-result-list.s-search-results.sg-row');
+    const productHandles = await page.$$('.s-main-slot.s-result-list.s-search-results.sg-row > .s-result-item');
 
     for (const productHandle of productHandles) {
         try {
@@ -32,7 +32,7 @@ import puppeteer from "puppeteer";
 
             console.log(`${title} - ${price}`);
         } catch (error) {
-            console.log(error);
+          
         }
     }
 })();

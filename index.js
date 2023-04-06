@@ -28,7 +28,7 @@ const puppeteer_1 = __importDefault(require("puppeteer"));
     yield page.screenshot({
         path: 're-zero.png'
     });
-    const productHandles = yield page.$$('.s-main-slot.s-result-list.s-search-results.sg-row');
+    const productHandles = yield page.$$('.s-main-slot.s-result-list.s-search-results.sg-row > .s-result-item');
     for (const productHandle of productHandles) {
         try {
             const title = yield page.evaluate((el) => { var _a; return (_a = el.querySelector('h2 > a > span')) === null || _a === void 0 ? void 0 : _a.textContent; }, productHandle);
@@ -36,7 +36,6 @@ const puppeteer_1 = __importDefault(require("puppeteer"));
             console.log(`${title} - ${price}`);
         }
         catch (error) {
-            console.log(error);
         }
     }
 }))();
