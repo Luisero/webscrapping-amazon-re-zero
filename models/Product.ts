@@ -1,9 +1,9 @@
-class Product{
+export class Product{
     private title_: string;
     private price_: number = 0;
-    private description?: string;
+    private description: string;
 
-    constructor(title: string, price: number, description?: string){
+    constructor(title: string, price: number, description: string){
         this.title_ = title;
         this.price_ = price;
         this.description = description;

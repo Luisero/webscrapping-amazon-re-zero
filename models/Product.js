@@ -1,4 +1,6 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Product = void 0;
 class Product {
     constructor(title, price, description) {
         this.price_ = 0;
@@ -19,3 +21,4 @@ class Product {
         this.price_ = price;
     }
 }
+exports.Product = Product;
