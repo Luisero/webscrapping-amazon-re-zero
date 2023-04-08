@@ -45,15 +45,12 @@ export class Scrapper {
         await this.browser.close();
     }
     async hasNextPage() {
-        try{
 
-            const nextButton = await this.page.$$('.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator');
-            return true
-        }
-        catch(error){
-            
-            return false;
-        }
+        const nextButton = await this.page.$$('.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator');
+
+        const hasNextPage = nextButton !== null;
+
+        return hasNextPage;
 
 
     }
@@ -101,9 +98,10 @@ export class Scrapper {
     async goToNextPage(): Promise<void> {
         let buttonNextSelector = '.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator';
         await this.page.waitForSelector(buttonNextSelector, {
-            visible:true
+            visible: true,
+            timeout:10000
         })
-        
+
         this.page.click(buttonNextSelector);
 
 
@@ -112,42 +110,46 @@ export class Scrapper {
 
     async getProductsInfos() {
         let products: Product[] = [];
-        
+        let numberOfScannedPages = 1;
+
         const productHandles = await this.getProductContainer('.s-main-slot.s-result-list.s-search-results.sg-row > .s-result-item');
 
         let hasNextPage: boolean = await this.hasNextPage();
 
-        while(hasNextPage) {
+        while (hasNextPage) {
             for (const productHandle of productHandles) {
                 try {
                     const title: string = await this.getProductTitle(productHandle);
                     const price = await this.getProductPrice(productHandle);
 
                     const image_url = await this.getProductImageUrl(productHandle);
-                    
+
                     const description = '';
-                    
+
                     let product = new Product(title, price, image_url, description);
-                    
-                    
+
+
                     if (price > 0) products.push(product);
-                    
+
                 } catch (error) {
                     console.log(error)
                 }
             }
-            
+            console.log(`Pages scanned: ${numberOfScannedPages}`)
             try {
-                
+
                 await this.goToNextPage()
+                
             } catch (error) {
                 console.log('There is no more pages.')
                 break;
             }
+            
+
+            hasNextPage = await this.hasNextPage();
 
             
-            hasNextPage = await this.hasNextPage();
-            console.log(hasNextPage)
+            numberOfScannedPages++;
         }
         console.log(products);
         return products;

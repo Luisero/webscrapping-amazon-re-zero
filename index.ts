@@ -5,8 +5,12 @@ import puppeteer, { Browser, Page } from 'puppeteer';
     
     let url = 'https://www.amazon.com.br/s?k=re+zero&__mk_pt_BR=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=2NFB5D1F7SH5B&sprefix=re+zero+%2Caps%2C166&ref=nb_sb_noss_2';
     
+
+    let headless:boolean = process.argv.includes('-H')
+    console.log(`Headless mode: ${headless}`)
+
     let browser: Browser = await puppeteer.launch({
-        headless: false,
+        headless: headless,
         userDataDir:'./tmp'
     });
 

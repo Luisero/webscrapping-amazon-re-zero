@@ -42,13 +42,9 @@ class Scrapper {
     }
     hasNextPage() {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const nextButton = yield this.page.$$('.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator');
-                return true;
-            }
-            catch (error) {
-                return false;
-            }
+            const nextButton = yield this.page.$$('.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator');
+            const hasNextPage = nextButton !== null;
+            return hasNextPage;
         });
     }
     parseFormatedPriceToFloat(formatedPrice) {
@@ -93,7 +89,8 @@ class Scrapper {
         return __awaiter(this, void 0, void 0, function* () {
             let buttonNextSelector = '.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator';
             yield this.page.waitForSelector(buttonNextSelector, {
-                visible: true
+                visible: true,
+                timeout: 10000
             });
             this.page.click(buttonNextSelector);
         });
@@ -101,6 +98,7 @@ class Scrapper {
     getProductsInfos() {
         return __awaiter(this, void 0, void 0, function* () {
             let products = [];
+            let numberOfScannedPages = 1;
             const productHandles = yield this.getProductContainer('.s-main-slot.s-result-list.s-search-results.sg-row > .s-result-item');
             let hasNextPage = yield this.hasNextPage();
             while (hasNextPage) {
@@ -118,6 +116,7 @@ class Scrapper {
                         console.log(error);
                     }
                 }
+                console.log(`Pages scanned: ${numberOfScannedPages}`);
                 try {
                     yield this.goToNextPage();
                 }
@@ -126,7 +125,7 @@ class Scrapper {
                     break;
                 }
                 hasNextPage = yield this.hasNextPage();
-                console.log(hasNextPage);
+                numberOfScannedPages++;
             }
             console.log(products);
             return products;
