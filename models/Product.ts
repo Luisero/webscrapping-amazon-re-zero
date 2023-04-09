@@ -1,8 +1,8 @@
 export class Product{
     private title_: string;
     private price_: number = 0;
-    private image_url: string;
-    private description: string;
+    public image_url: string;
+    public description: string;
 
     constructor(title: string, price: number, image_url: string, description: string){
         this.title_ = title;
@@ -30,6 +30,7 @@ export class Product{
         this.price_ = price;
     }
 
+    
 
     
     

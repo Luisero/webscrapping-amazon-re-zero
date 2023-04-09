@@ -1,5 +1,8 @@
 import { Browser, ElementHandle, Page } from "puppeteer";
 import { Product } from "./Product";
+import * as fs from 'fs';
+
+
 export class Scrapper {
     products: Product[] = [];
 
@@ -37,27 +40,28 @@ export class Scrapper {
 
 
         const products: Product[] = await this.getProductsInfos();
-        console.log(products);
+        
 
 
         console.log(await this.hasNextPage())
 
         await this.browser.close();
     }
+    
     async hasNextPage() {
 
-        const nextButton = await this.page.$$('.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator');
-
-        const hasNextPage = nextButton !== null;
-
+        const nextButton = await this.page.$('.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator');
+        
+        const hasNextPage: boolean = nextButton !== null;
+        
         return hasNextPage;
 
-
+        
     }
 
     parseFormatedPriceToFloat(formatedPrice: string | null | undefined): number {
         if (formatedPrice === null || formatedPrice === undefined) return 0;
-
+        
         const price = Number.parseFloat(formatedPrice.replace('R$', '').replace(',', '.'));
 
         return price;
@@ -83,7 +87,7 @@ export class Scrapper {
         const formatedPrice = await this.page.evaluate((el) => el.querySelector('.a-price span[aria-hidden="true"]')?.textContent, productHandle);
 
         const price = this.parseFormatedPriceToFloat(formatedPrice);
-
+        
         return price;
     }
 
@@ -91,21 +95,29 @@ export class Scrapper {
         const image_url = await this.page.evaluate((el) => el.querySelector('.s-image')?.getAttribute('src'), productHandle);
 
         if (image_url === null || image_url === undefined) return '';
-
+        
         return image_url;
 
     }
     async goToNextPage(): Promise<void> {
         let buttonNextSelector = '.s-pagination-item.s-pagination-next.s-pagination-button.s-pagination-separator';
+        await this.page.click(buttonNextSelector);
         await this.page.waitForSelector(buttonNextSelector, {
             visible: true,
-            timeout:10000
+            timeout: 15000
         })
 
-        this.page.click(buttonNextSelector);
 
 
 
+    }
+    saveProductToCSV(product: Product) {
+        const { title, price, description, image_url } = product;
+
+        fs.appendFile('results.csv', `${title};${price};${description};${image_url}\n`, (e) => {
+            if (e) throw e;
+            console.log('Saved')
+        })
     }
 
     async getProductsInfos() {
@@ -115,7 +127,7 @@ export class Scrapper {
         const productHandles = await this.getProductContainer('.s-main-slot.s-result-list.s-search-results.sg-row > .s-result-item');
 
         let hasNextPage: boolean = await this.hasNextPage();
-
+        
         while (hasNextPage) {
             for (const productHandle of productHandles) {
                 try {
@@ -129,7 +141,11 @@ export class Scrapper {
                     let product = new Product(title, price, image_url, description);
 
 
-                    if (price > 0) products.push(product);
+                    if (price > 0) {
+                        products.push(product);
+                        this.saveProductToCSV(product);
+                    }
+
 
                 } catch (error) {
                     console.log(error)
@@ -139,16 +155,18 @@ export class Scrapper {
             try {
 
                 await this.goToNextPage()
-                
+
             } catch (error) {
                 console.log('There is no more pages.')
                 break;
             }
-            
+
+            if (!hasNextPage) {
+                break;
+            }
 
             hasNextPage = await this.hasNextPage();
 
-            
             numberOfScannedPages++;
         }
         console.log(products);
